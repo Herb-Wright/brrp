@@ -1,0 +1,155 @@
+:root {
+    --black: #000000;
+    --white: #ffffff;
+    --utah-red: #be0000;
+    --red-rocks: #890000;
+    --stone-900: #1c1917;
+    --stone-700: #44403c;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    font-family: "Open Sans", sans-serif;
+    /* font-size: 1.125rem; */
+    font-size: 12px;
+    color: var(--stone-900);
+    margin-bottom: 8em;
+}
+
+h1 {
+    text-align: center;
+    font-family: "Montserrat", serif;
+    font-weight: 600;
+    margin-top: 2em;
+    margin-bottom: 0.75em;
+    font-size: 2.5em;
+    font-style: normal;
+    /* color: var(--red-rocks); */
+}
+
+h2 {
+    font-family: "Montserrat", serif;
+    font-weight: 600;
+    font-size: 2em;
+    margin-top: 2em;
+    margin-bottom: 0.75em;
+}
+
+h3 {
+    font-family: "Montserrat", serif;
+    font-weight: 600;
+    font-size: 1.5em;
+    margin-top: 2em;
+    margin-bottom: 0.75em;
+}
+
+hr {
+    width: 100%;
+    margin: 2.5em 0;
+}
+
+img {
+    max-width: 100%;
+}
+
+button {
+    background-color: var(--black);
+    color: var(--white);
+    min-width: 5em;
+    min-height: 2em;
+    font-size: 1.25em;
+    border: none;
+    border-radius: 1em;
+    transition: all ease-out 100ms;
+}
+
+button:hover {
+    background-color: var(--stone-700);
+    cursor: pointer
+}
+
+p {
+    text-align: justify;
+    margin: 0.75em 0;
+}
+
+a {
+    text-decoration: underline;
+    color: var(--utah-red);
+}
+a:visited {
+    color: var(--red-rocks);
+}
+a:hover {
+    text-decoration: none;
+    color: var(--utah-red);
+}
+
+.container {
+    padding: 1em;
+    max-width: 1000px;
+    /* display: flex; */
+    /* flex-direction: column; */
+    /* align-items: center; */
+    /* gap: 0.5em; */
+}
+
+.buttons {
+    display: flex;
+    width: 100%;
+    gap: 1em;
+    justify-content: center;
+    padding: 1.5em;
+}
+
+.fig1 {
+    margin: 1.5em auto;
+    width: 600px;
+}
+
+.center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.abstract {
+    max-width: 750px;
+    margin: 1.5em auto;
+}
+
+
+.montserrat-text {
+    font-family: "Montserrat", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+}
+  
+.authors {
+    font-size: 1.25em;
+    text-align: center;
+    margin-bottom: 0.25em;
+}
+
+.affiliations {
+    text-align: center;
+    margin-bottom: 1.5em;
+    margin-top: 0;
+}
+
+@media only screen and (min-width: 480px) {
+    body {
+        font-size: 14px;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+    body {
+        font-size: 16px;
+    }
+}
+
+
+

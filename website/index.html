@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+        <link rel="stylesheet" href="styles.css"/>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap" rel="stylesheet">
+        <script defer="" src="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+            var mathElements = document.getElementsByClassName("math");
+            var macros = [];
+            for (var i = 0; i < mathElements.length; i++) {
+                var texText = mathElements[i].firstChild;
+                if (mathElements[i].tagName == "SPAN") {
+                katex.render(texText.data, mathElements[i], {
+                displayMode: mathElements[i].classList.contains('display'),
+                throwOnError: false,
+                macros: macros,
+                fleqn: false
+                });
+            }}});
+        </script>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@latest/dist/katex.min.css">
+    
+        <title>BRRP</title>
+        <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    </head>
+    <body>
+        <div class="container">
+            <h1>Robust Bayesian Scene Reconstruction by Leveraging Retrieval-Augmented Priors</h1>
+            <div class="text-align-center">
+                <p class="authors">
+                    Herbert Wright<sup>1</sup>, 
+                    Weiming Zhi<sup>2</sup>, 
+                    Matthew Johnson-Roberson<sup>2</sup>, 
+                    Tucker Hermans<sup>1, 3</sup>
+                </p>
+                <p class="affiliations">
+                    <sup>1</sup>University of Utah,
+                    <sup>2</sup>Carnegie Mellon University,
+                    <sup>3</sup>NVIDA
+                </p>
+            </div>
+            <div class="buttons">
+                <a href="paper.pdf"><button>PDF</button></a>
+                <a href="https://github.com/Herb-Wright/brrp"><button>Code</button></a>
+            </div>
+            <div class="center">
+                <img src="fig1.png" class="fig1"/>
+            </div>
+            <hr>
+            <p class="abstract"><b>Abstract:</b> Constructing 3D representations of object geometry is critical for many downstream robotics tasks, particularly tabletop manipulation problems. These representations must be built from potentially noisy partial observations. In this work, we focus on the problem of reconstructing a multi-object scene from a single RGBD image, generally from a fixed camera in the scene. Traditional scene representation methods generally cannot infer the geometry of unobserved regions of the objects from the image. Attempts have been made to leverage deep learning to train on a dataset of observed objects and representations, and then generalize to new observations. However, this can be brittle to noisy real-world observations and objects not contained in the dataset, and cannot reason about their confidence. We propose BRRP, a reconstruction method that leverages preexisting mesh datasets to build an informative prior during robust probabilistic reconstruction. In order to make our method more efficient, we introduce the concept of retrieval-augmented prior, where we retrieve relevant components of our prior distribution during inference. The prior is used to estimate the geometry of occluded portions of the in-scene objects. Our method produces a distribution over object shape that can be used for reconstruction or measuring uncertainty. We evaluate our method in both simulated scenes and in the real world. We demonstrate the robustness of our method against deep learning-only approaches while being more accurate than a method without an informative prior.</p>
+            <hr>
+            <h2>Introduction</h2>
+            <p>The ability to construct internal representations of its
+                operating environment is key for robot autonomy. These
+                representations need to be particularly fine-grained for robotic
+                manipulation, which often requires closely interacting with
+                and avoiding objects. These interactions make it necessary for
+                robots to develop an understanding of the geometry within
+                their vicinity. Explicit 3D representations of the geometry
+                of the scene are often required for the robust usage of
+                downstream grasping and motion planning algorithms. These
+                representations must be built from observations that are both
+                noisy and, due to occlusion, only contain partial information
+                of the scene. In our case, we focus on the problem of building
+                a 3D representation of multi-object scenes from a single
+                RGBD camera image.</p>
+            <p>
+                In this work, we introduce a novel Bayesian approach for robustly reconstructing multi-object tabletop scenes by leveraging object-level shape priors. We present <b>B</b>ayesian <b>R</b>econstruction with <b>R</b>etrieval-augmented <b>P</b>riors  (BRRP). BRRP is resilient to many of the pitfalls of learning-based methods while still being able to leverage an <i>informative prior</i> to more accurately reconstruct known objects.
+            </p>
+            <h2>Retrieval-augmented Priors</h2>
+            <p>
+                To motivate retrieval-augmented priors, consider the problem of Bayesian inference with a mixture model acting as the prior distribution. Given some data, we would like to infer a posterior distribution over hypotheses. If we have a mixture model as a prior distribution, then:
+                <span class="math display">
+                    P(H | D) \propto P(D | H) \sum_{c = 1}^C P(H | c).
+                </span>
+                If our prior distribution has a lot of components, it may be inefficient to fully evaluate. This could be a serious problem for algorithms like SVGD, which requires iteratively computing the gradient of both the likelihood and prior. Inspired by <a href="https://proceedings.neurips.cc/paper/2020/hash/6b493230205f780e1bc26945df7481e5-Abstract.html">retrieval-augmented generation</a>, the insight behind retrieval-augmented priors is to determine which subset of the prior distribution components to retrieve and use given some detection result <span class="math">R</span>. Conditioning on this detection result, we have a new posterior distribution, <span class="math">P(H | D, R)</span>. Making an independence assumption,
+                <span class="math display">
+                    P(H | D, R) \propto P(D | H) \cdot \mathbb E_{c \sim P(c | R)} [P(H | c)].
+                </span>
+                Comparing to the first equation, the expectation now replaces the true prior. Then, we can use a top-<span class="math">k</span> approximation for the expectation:
+                <span class="math display">
+                    P(H | D, R) \propto P(D | H) \sum_{c \in \text{topk}} P(H | c) P(c | R)
+                </span>
+                This means that we only need to evaluate a subset of the prior distribution components.</p>
+            <h2>BRRP Method</h2>
+            <img src="method_overview.png"/>
+            <p>Overview of BRRP method. We begin with a segmented RGBD image and (a) feed cropped images of each segment into CLIP to get object probabilities. Then, we retrieve and (b) register the the top-k objects in the prior. This gives us a set of registered prior samples. We also (c) compute negative samples based on the observed segmented point cloud. Finally, (d) we run SVGD optimization to recover a posterior distribution over Hilbert map weights. We can use this distribution to both reconstruct the scene as well as measure uncertainty.</p>
+            <h2>Results</h2>
+            <h3>Real World Scenes</h3>
+            <img src="qualitative1.png"/> 
+            <p>Above is an example of qualitative reconstructions on real world scenes. We compare against an occupancy version of <a href="https://ieeexplore.ieee.org/abstract/document/9196981?casa_token=wAluMFCyrRcAAAAA:6HM56PLjPpFK0J0QPKjqCLuE16mtjSZywiiDNHGusGxQRNxFwWFp2JZKT9eT4OIW81hDETt-Ow">PointSDF</a> as well as the <a href="https://arxiv.org/abs/2403.08106">V-PRISM</a> method. Our method (BRRP) does a better job at being robust to a lot of the pitfalls of the aforementioned methods.</p>
+            <h3>Procedurally Generated Scenes</h3>
+            <img src="chamfer_dist_plot.png"/>
+            <p>Above is a plot of Chamfer distance on procedurally generated scenes (lower is better). We use the same baselines as the real world scenes, but compare methods quantitatively in simulated scenes. Our method outperforms the baselines.</p>
+            <h3>Uncertainty</h3>
+            <img src="new_uncertainty.png"/>
+            <p>Here, we visualize the uncertainty of our method. Because our method is probabilistic, we can recover <i>principled uncertainy</i> about object shape</p>
+        </div>
+    </body>
+</html>
