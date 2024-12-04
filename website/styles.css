@@ -17,6 +17,10 @@ body {
     margin-bottom: 8em;
 }
 
+body * {
+    box-sizing: border-box;
+}
+
 h1 {
     text-align: center;
     font-family: "Montserrat", serif;
