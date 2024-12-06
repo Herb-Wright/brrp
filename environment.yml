@@ -1,0 +1,24 @@
+name: brrp
+channels:
+- conda-forge
+- pytorch
+- nvidia
+dependencies:
+- python=3.11
+- cudatoolkit
+- pytorch-gpu
+- torchvision
+- pytorch-cuda=12.1
+- numpy
+- open3d
+- pyg::pyg
+- pytorch_cluster
+- matplotlib  # OPTIONAL - used for scripts / graphs
+- trimesh  # OPTIONAL - used for visualization code
+- scikit-image  # OPTIONAL - used for visualization (marching cubes)
+- seaborn  # OPTIONAL - used for scripts / graphs
+- pip
+- pip:
+  - point-cloud-utils
+  - transformers
+  - pyglet<2  # OPTIONAL - used for visualization code

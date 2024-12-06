@@ -1,0 +1,1 @@
+python scripts/run_sim_experiment.py -m BRRP -d brrp_shifted_shapenet_100 -o exp_shift.log
