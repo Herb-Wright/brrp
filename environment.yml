@@ -4,11 +4,11 @@ channels:
 - pytorch
 - nvidia
 dependencies:
-- python=3.11
+- python=3.12
 - cudatoolkit
-- pytorch-gpu
+- pytorch
 - torchvision
-- pytorch-cuda=12.1
+# - pytorch-cuda=12.1
 - numpy
 - open3d
 - pyg::pyg

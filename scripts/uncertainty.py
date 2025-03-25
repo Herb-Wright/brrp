@@ -1,3 +1,6 @@
+"""
+This script is still a work-in-progress
+"""
 import logging
 import os
 
@@ -83,5 +86,8 @@ points_filtered = xyz[filter_mask]
 seg_filtered = seg_map[filter_mask]
 points_filtered, batch = grid_subsample(points_filtered, seg_filtered, 0.02)
 
+
+
+
 # trimesh.Scene([trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])]).show()
-trimesh.Scene(meshes + [trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])]).show(smooth=False)
+# trimesh.Scene(meshes + [trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])]).show(smooth=False)
