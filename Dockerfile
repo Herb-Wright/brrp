@@ -4,6 +4,14 @@ FROM nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
 # Set environment variables to non-interactive mode to avoid prompts during installation
 ENV DEBIAN_FRONTEND=noninteractive
 
+RUN apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    apt-get update -y && \
+    apt-get install -y apt-transport-https ca-certificates && \
+    apt-get update --allow-insecure-repositories && \
+    apt-get install -y --allow-unauthenticated gnupg && \
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 3B4FE6ACC0B21F32 871920D1991BC93C
+
 # Install necessary packages including curl and software-properties-common
 RUN apt-get update && apt-get install -y \
     lsb-release \
@@ -54,8 +62,13 @@ WORKDIR /brrp
 COPY . .
 
 # Create and activate the Conda environment
-RUN conda env create -f /brrp/environment.yml \
-    && conda clean -a
+RUN conda clean -a && \
+    for i in $(seq 1 3); do \
+      conda env create -f /brrp/environment.yml && break || \
+      echo "Retry attempt $i/3" && \
+      conda clean -a && \
+      sleep 5; \
+    done
 
 # Set the environment variable for the Conda environment
 ENV CONDA_DEFAULT_ENV=brrp
@@ -74,11 +87,11 @@ RUN mkdir /catkin_ws/src
 COPY ./custom_msgs /catkin_ws/src
 
 # RUN apt-get install -y python3-empy
-RUN /opt/conda/bin/conda run -n brrp pip install empy==3.3.4 catkin_pkg rosnumpy gdown
+RUN /opt/conda/bin/conda run -n brrp pip install empy==3.3.4 catkin_pkg rosnumpy filelock gdown
 
 # get the right torch
 RUN /opt/conda/bin/conda run -n brrp conda remove -y pytorch && \
-    /opt/conda/bin/conda run -n brrp pip install torch
+    /opt/conda/bin/conda run -n brrp pip install --no-cache-dir torch --no-deps --ignore-installed
 
 
 # Initialize the Catkin catkin_ws and build custom_msgs
