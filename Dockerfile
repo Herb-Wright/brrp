@@ -87,7 +87,7 @@ RUN mkdir /catkin_ws/src
 COPY ./custom_msgs /catkin_ws/src
 
 # RUN apt-get install -y python3-empy
-RUN /opt/conda/bin/conda run -n brrp pip install empy==3.3.4 catkin_pkg rosnumpy filelock gdown
+RUN /opt/conda/bin/conda run -n brrp pip install --no-cache-dir empy==3.3.4 catkin_pkg rosnumpy gdown filelock
 
 # get the right torch
 RUN /opt/conda/bin/conda run -n brrp conda remove -y pytorch && \
