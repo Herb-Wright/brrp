@@ -17,6 +17,7 @@ rate = 0.2  # Hz; once ever 5 seconds
 path_to_prior = "./ycb_prior"
 
 def main():
+    rospy.init_node("BRRP", log_level=rospy.DEBUG, anonymous=True)
     r = rospy.Rate(rate) # run at rate Hz
     node = BRRPNode(
         image_topic="/rgb/image_raw",
@@ -41,7 +42,11 @@ class BRRPNode:
         self.pub = rospy.Publisher(mesh_list_topic, MeshList, queue_size=1)
         self.convert_depth_to_res = True  # Change to false if realsense
         self.res = None
-        self.segmenter = GroundedSamSegmenter("cuda")
+        self.segmenter = GroundedSamSegmenter(
+            "cuda",
+            prompt="object on table that can be picked up",
+            max_depth=3,
+        )
 
     def callback_point_cloud(self, msg: PointCloud2):
         if msg.height == 1:
@@ -68,11 +73,13 @@ class BRRPNode:
         if self.xyz is None or self.rgb is None or self.xyz.shape != self.rgb.shape:
             rospy.loginfo("Can't publish yet: either not enough data or wrong shape")
             return
-        rgb = torch.from_numpy(self.rgb)
-        xyz = torch.from_numpy(self.xyz)
-        seg_mask = self.segmenter.segment(self.rgb, self.xyz)
+        rgb = torch.from_numpy(self.rgb).to(torch.device("cuda"))
+        xyz = torch.from_numpy(self.xyz).to(torch.device("cuda"))
+        seg_mask = self.segmenter.segment(self.rgb, self.xyz).to(torch.device("cuda"))
 
-        weights, hp_transform = full_brrp_method(rgb, xyz, seg_mask, path_to_prior)
+        weights, hp_transform = full_brrp_method(
+            rgb.to(torch.float32), xyz.to(torch.float32), seg_mask, path_to_prior, device_str="cuda"
+        )
 
         num_classes = int(seg_mask.amax().item() + 1)
         def occ_func(x: torch.Tensor) -> torch.Tensor:

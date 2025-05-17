@@ -141,7 +141,7 @@ RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; \
     catkin_make"
 
 # Expose necessary ROS ports (you may need additional ports depending on your project)
-# EXPOSE 11311
+EXPOSE 11311
 
 RUN echo "source /opt/ros/noetic/setup.bash && source /catkin_ws/devel/setup.bash" >> ~/.bashrc
 

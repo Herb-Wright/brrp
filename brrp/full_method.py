@@ -24,9 +24,11 @@ def full_brrp_method(
     n_hinge_points_each_side: int = 12,
     camera_pos: torch.Tensor = None
 ) -> tuple[torch.Tensor, GaussianHingePointTransform]:
+
     device = torch.device(device_str)
     if camera_pos is None:
         camera_pos = torch.zeros(3, device=device)
+    xyz[torch.isnan(xyz[:, :, 0])] = camera_pos
     n_objects = torch.amax(mask)
 
     logging.debug("loading prior classes")
@@ -103,6 +105,14 @@ def full_brrp_method(
     prior_samples = prior_samples * global_scale * scales_qp.unsqueeze(2).unsqueeze(3)
     prior_samples = prior_samples @ trans_qp[:, :, :3, :3].permute(0, 1, 3, 2) + trans_qp[:, :, :3, 3].unsqueeze(2)
     prior_samples = prior_samples + object_centers_qp.unsqueeze(1).unsqueeze(2)  # (N, K, QP, 3)
+
+    print("xyz shape: " + str(xyz.shape))
+    print("# of background: " + str(torch.sum(mask == 0)) )
+    import trimesh
+    pc1 = trimesh.PointCloud(xyz[mask > 0].cpu(), colors=[255, 0, 0])
+    pc2 = trimesh.PointCloud(xyz[mask == 0].cpu())
+    trimesh.Scene([pc1, pc2]).show()
+    # trimesh.PointCloud([[0, 0, 0], [1, 0, 0]]).show()
 
     logging.debug("negative sampling")
     observed_samples, observed_labels = brrp_negative_sample(
