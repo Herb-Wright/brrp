@@ -91,23 +91,16 @@ RUN echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
 # pip install dependencies
 RUN pip install numpy
 RUN pip install --ignore-installed open3d
-RUN pip install --no-cache-dir torch==2.6
+RUN pip install --no-cache-dir --ignore-installed torch==2.6
 # RUN python -c "import torch; print(torch.__version__)"
 RUN pip install --no-cache-dir torchvision
 RUN pip install --ignore-installed torch_geometric
-RUN pip install torch-cluster -f https://data.pyg.org/whl/torch-2.6.0+${CUDA}.html
+RUN pip install torch-cluster -f https://data.pyg.org/whl/torch-2.6.0+cu126.html
 RUN pip install matplotlib
 RUN pip install trimesh
 RUN pip install scikit-image
 RUN pip install point-cloud-utils
 RUN pip install transformers
-# RUN pip install pyglet<2
-
-# # Set the environment variable for the Conda environment
-# ENV CONDA_DEFAULT_ENV=brrp
-# ENV PATH=/opt/conda/envs/$CONDA_DEFAULT_ENV/bin:$PATH
-
-# RUN /opt/conda/bin/conda run -n brrp pip install -e .
 
 # # Install ROS dependencies for Catkin workspace
 RUN /bin/bash -c "source /opt/ros/noetic/setup.bash; \
@@ -147,6 +140,10 @@ RUN echo "source /opt/ros/noetic/setup.bash && source /catkin_ws/devel/setup.bas
 
 RUN python -m gdown https://drive.google.com/uc?id=1h9kdW4QKFN3EzeOarZ82SOiiXu-T6ssw -O ycb_prior.tar.xz
 RUN tar -xf ycb_prior.tar.xz
+RUN python -m gdown https://drive.google.com/uc?id=1qExvY1Nz0crqtLOuDhiNg8DwCmaVbXVC -O pointsdf.pt
+
+RUN pip install "pyglet<2"
+RUN pip install git+https://github.com/Herb-Wright/v-prism.git
 
 # # Default command (you can change this based on how you run your ROS node)
 CMD ["/bin/bash", "-c"]

@@ -2,7 +2,7 @@
 need to pip install v_prism for this one.
 
 ```sh
-pip install https://github.com/Herb-Wright/v-prism.git
+pip install git+https://github.com/Herb-Wright/v-prism.git
 ```
 """
 import logging

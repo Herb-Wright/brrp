@@ -22,7 +22,8 @@ def full_brrp_method(
     device_str: str = "cpu",
     global_scale: float = 0.12,  # 12cm
     n_hinge_points_each_side: int = 12,
-    camera_pos: torch.Tensor = None
+    camera_pos: torch.Tensor = None,
+    lambda_prior: float = 1.0
 ) -> tuple[torch.Tensor, GaussianHingePointTransform]:
 
     device = torch.device(device_str)
@@ -106,14 +107,6 @@ def full_brrp_method(
     prior_samples = prior_samples @ trans_qp[:, :, :3, :3].permute(0, 1, 3, 2) + trans_qp[:, :, :3, 3].unsqueeze(2)
     prior_samples = prior_samples + object_centers_qp.unsqueeze(1).unsqueeze(2)  # (N, K, QP, 3)
 
-    print("xyz shape: " + str(xyz.shape))
-    print("# of background: " + str(torch.sum(mask == 0)) )
-    import trimesh
-    pc1 = trimesh.PointCloud(xyz[mask > 0].cpu(), colors=[255, 0, 0])
-    pc2 = trimesh.PointCloud(xyz[mask == 0].cpu())
-    trimesh.Scene([pc1, pc2]).show()
-    # trimesh.PointCloud([[0, 0, 0], [1, 0, 0]]).show()
-
     logging.debug("negative sampling")
     observed_samples, observed_labels = brrp_negative_sample(
         xyz.reshape(-1, 3).to(device),
@@ -136,7 +129,8 @@ def full_brrp_method(
         labels, 
         top_k.values, 
         n_objects, 
-        hp_trans
+        hp_trans,
+        lambda_prior=lambda_prior
     )
     return weights, hp_trans
 

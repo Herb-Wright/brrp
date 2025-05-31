@@ -10,19 +10,28 @@ from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point, Vector3
 from std_msgs.msg import ColorRGBA
 import trimesh
+from v_prism.utils.pointsdf import PointSDF, scale_and_center_object_points
+from v_prism.utils.pointsdf import scale_and_center_queries, index_points
+from v_prism.utils.pointsdf import  farthest_point_sample
 
 from custom_msgs.msg import MeshList
 from brrp.full_method import full_brrp_method
 from brrp.segmenter import GroundedSamSegmenter
 from brrp.visualization import gen_mesh_for_sdf_batch_3d, some_colors
+from brrp.utils import abspath, mkdir_if_not_exists, setup_logger
 
 rate = 0.2  # Hz; once ever 5 seconds
-path_to_prior = "./ycb_prior"
+
+npoint = 256
+model = PointSDF()
+model.load_state_dict(torch.load(abspath("./pointsdf.pt")))  # <-- model path here
+tau = 0.3
+device = torch.device("cuda")
 
 def main():
-    rospy.init_node("BRRP", log_level=rospy.DEBUG, anonymous=True)
+    rospy.init_node("PointSDF", log_level=rospy.DEBUG, anonymous=True)
     r = rospy.Rate(rate) # run at rate Hz
-    node = BRRPNode(
+    node = PointSDFNode(
         image_topic="/rgb/image_raw",
         point_cloud_topic="/points2",
         mesh_list_topic="/perception/mesh_list",
@@ -32,7 +41,7 @@ def main():
         node.publish()
         r.sleep()
 
-class BRRPNode:
+class PointSDFNode:
     def __init__(
         self: str, 
         image_topic: str, 
@@ -75,6 +84,7 @@ class BRRPNode:
     def callback_image(self, msg: msg_image):
         if self.convert_depth_to_res:
             self.res = (msg.height, msg.width)  # (720, 1280)?
+            # rospy.loginfo(f"image had shape ({msg.height}, {msg.width})")
         rgb_raw = ros_numpy.image.image_to_numpy(msg) / 255
         if msg.encoding == "bgra8":
             idxs = np.array([2, 1, 0])
@@ -85,44 +95,56 @@ class BRRPNode:
         if self.xyz is None or self.rgb is None or self.xyz.shape != self.rgb.shape:
             rospy.loginfo("Can't publish yet: either not enough data or wrong shape")
             return
-        rgb = torch.from_numpy(self.rgb).to(torch.device("cuda"))
-        xyz = torch.from_numpy(self.xyz).to(torch.device("cuda"))
+        rgb = torch.from_numpy(self.rgb).to(torch.device("cuda")).to(torch.float32)
+        xyz = torch.from_numpy(self.xyz).to(torch.device("cuda")).to(torch.float32)
         seg_mask = self.segmenter.segment(self.rgb, self.xyz).to(torch.device("cuda"))
 
-        rospy.loginfo("running BRRP")
-        weights, hp_transform = full_brrp_method(
-            rgb.to(torch.float32), 
-            xyz.to(torch.float32), 
-            seg_mask, path_to_prior, 
-            device_str="cuda",
-            lambda_prior=5.0
-        )
+        rospy.loginfo("running PointSDF")
+        num_classes = int(torch.amax(seg_mask).item()) + 1
 
-        num_classes = int(seg_mask.amax().item() + 1)
-        rospy.loginfo(f"running marching cubes num_classes={num_classes}")
+        obj_points_list = []
+        for i in range(1, num_classes):
+            point_cloud = xyz[seg_mask == i]
+            sampled_points_idx = farthest_point_sample(point_cloud.unsqueeze(0), npoint=npoint)
+            sampled_points = index_points(point_cloud.unsqueeze(0), sampled_points_idx)
+            obj_points_list.append(sampled_points.reshape(npoint, 3))
+        batched_points_uncentered = torch.stack(obj_points_list)  # (N, p, 3)
+        obj_points, centers = scale_and_center_object_points(batched_points_uncentered)
+        N = centers.shape[0]
+        model.to(device)
+        model.eval()
+        with torch.no_grad():
+            obj_feats = model.get_latent_features(obj_points.to(device))
+
+        rospy.loginfo("running marching cubes")
         def occ_func(x: torch.Tensor) -> torch.Tensor:
-            out = x.to(torch.device("cuda")).to(torch.float32)
-            out = torch.mean(torch.sigmoid(torch.sum(hp_transform.transform(out.unsqueeze(0)) * weights.unsqueeze(2), dim=-1)), dim=0)
-            return out.cpu()
-        meshes: list[trimesh.Trimesh] = []
-        for i in range(0, num_classes-1):
+            with torch.no_grad():
+                query_pts = scale_and_center_queries(centers.to(device), x.to(torch.float).to(device).unsqueeze(0).repeat((N, 1, 1)))
+                preds = model.get_preds(obj_feats, query_pts)  # (N, P)
+            return preds.cpu()
+        meshes = []    
+        for i in range(N):
             occ_func_i = lambda x: occ_func(x)[i]
             mins = torch.amin(xyz[seg_mask == i+1], dim=0)
             maxs = torch.amax(xyz[seg_mask == i+1], dim=0)
+            maxs = torch.amax(batched_points_uncentered[i], dim=0)
             cntr = 0.5 * (mins + maxs).cpu()
+            rospy.logdebug(cntr)
+            bound = 0.1        # for i in range(0, num_classes-1):
             mesh = gen_mesh_for_sdf_batch_3d(
                 occ_func_i,
                 xlim=[cntr[0] - 0.4, cntr[0] + 0.4], 
                 ylim=[cntr[1] - 0.4, cntr[1] + 0.4], 
                 zlim=[cntr[2] - 0.4, cntr[2] + 0.4], 
-                resolution=0.015,  # change this for better resolution
-                confidence=0.5,
+                resolution=0.015,
+                confidence=tau
             )
             if mesh is None:
-                logging.warning("empty mesh :-(")
+                print("empty mesh :-(")
                 continue
             mesh.visual.vertex_colors = some_colors[i % len(some_colors)] + [215]
             meshes.append(mesh)
+
 
         rospy.loginfo(f"publishing meshes n_meshes={len(meshes)}")
         msg = MeshList()
@@ -159,7 +181,7 @@ def create_triangle_list_marker(v, f, mesh_id, frame_id):
     marker.id = mesh_id
     marker.type = Marker.TRIANGLE_LIST
     marker.action = Marker.ADD
-    marker.lifetime = rospy.Duration(70)
+    marker.lifetime = rospy.Duration(30)
     
     # Set pose (usually identity for vertex-based meshes)
     marker.pose.orientation.w = 1.0
@@ -229,6 +251,7 @@ def faces_to_triangle_points(vertices, faces):
             triangle_points.append(point)
     
     return triangle_points
+
 
 
 if __name__ == "__main__":
