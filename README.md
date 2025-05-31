@@ -85,7 +85,7 @@ Run the container:
 docker run -it   --net=host   --gpus all   --env="NVIDIA_DRIVER_CAPABILITIES=all"   --env="DISPLAY=$DISPLAY"   --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --volume="$XAUTHORITY:/root/.Xauthority:rw"   brrp bash
 ```
 
-In the container:
+In the container (This is for Martin only):
 
 ```sh
 echo "155.98.68.120 perception-pc" >> /etc/hosts
