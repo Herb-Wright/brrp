@@ -42,13 +42,10 @@ def get_svgd_phi(particles: Tensor, ln_probs_particles: Tensor, kernel: Kernel) 
     num_particles = particles.shape[0]
     ln_prob_grad = torch.autograd.grad(torch.sum(ln_probs_particles), particles)[0]  # grad of ln prob w.r.t. particles
     particles = particles.detach().requires_grad_(True)  # (N, D)
-    print("ln_prob_grad", ln_prob_grad.shape, ln_prob_grad.mean())
-    print("particles", particles.shape, particles.mean())
     gram_mat = kernel(
         particles.reshape((num_particles, -1)), 
         particles.reshape((num_particles, -1)).detach()
     )  # (N, N)
-    print("gram_mat", gram_mat.shape, gram_mat.mean())
     kernel_grad = - torch.autograd.grad(torch.sum(gram_mat), particles)[0]
     phi_star = (gram_mat @ ln_prob_grad.reshape((num_particles, -1))).reshape(ln_prob_grad.shape) + kernel_grad  # (N, D)
     return phi_star, ln_probs_particles.detach()
