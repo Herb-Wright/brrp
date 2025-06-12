@@ -22,11 +22,14 @@ def full_brrp_method(
     device_str: str = "cpu",
     global_scale: float = 0.12,  # 12cm
     n_hinge_points_each_side: int = 12,
-    camera_pos: torch.Tensor = None
+    camera_pos: torch.Tensor = None,
+    lambda_prior: float = 1.0
 ) -> tuple[torch.Tensor, GaussianHingePointTransform]:
+
     device = torch.device(device_str)
     if camera_pos is None:
         camera_pos = torch.zeros(3, device=device)
+    xyz[torch.isnan(xyz[:, :, 0])] = camera_pos
     n_objects = torch.amax(mask)
 
     logging.debug("loading prior classes")
@@ -126,7 +129,8 @@ def full_brrp_method(
         labels, 
         top_k.values, 
         n_objects, 
-        hp_trans
+        hp_trans,
+        lambda_prior=lambda_prior
     )
     return weights, hp_trans
 
