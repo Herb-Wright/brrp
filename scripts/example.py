@@ -15,7 +15,7 @@ from brrp.full_method import full_brrp_method
 scene_dir = abspath("~/data/brrp_real_world_scenes/0002")  # CHANGE THIS
 
 
-setup_logger()
+setup_logger(level=logging.INFO)
 device_str = "cuda" if torch.cuda.is_available() else "cpu"
 device = torch.device(device_str)
 logging.info(f"beginning example.py with device {device}")
@@ -28,6 +28,7 @@ rgb = torch.from_numpy(np.asarray(Image.open(rgb_path))).to(device)
 rgb = rgb / 255
 xyz = torch.from_numpy(np.load(xyz_path)).to(device).to(torch.float32)
 seg_map = torch.from_numpy(np.load(seg_path)).to(device)
+# seg_map = (seg_map == 2).to(seg_map.dtype)
 num_classes = int(torch.amax(seg_map).item()) + 1
 scene_center = 0.5 * (torch.amin(xyz[seg_map > 0], dim=0) + torch.amax(xyz[seg_map > 0], dim=0))
 
