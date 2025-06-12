@@ -52,8 +52,8 @@ class BRRPNode:
         self.res = None
         self.segmenter = GroundedSamSegmenter(
             "cuda",
-            prompt="an object that can be picked up with one hand and is resting on a supporting surface",
-            max_depth=2.0,
+            prompt="an object that can be picked up with one hand",
+            max_depth=1.7,
             min_depth=0.5,
             threshold=0.10,
             quantile_max=0.25
@@ -91,6 +91,9 @@ class BRRPNode:
         rgb = torch.from_numpy(self.rgb).to(torch.device("cuda")) # (H, W, 3)
         xyz = torch.from_numpy(self.xyz).to(torch.device("cuda")) # (H, W, 3)
         seg_mask = self.segmenter.segment(self.rgb, self.xyz).to(torch.device("cuda")) # (H, W)
+        if torch.sum(seg_mask) == 0:
+            rospy.logwarn("no objects; not publishing.")
+            return
         seg_xyz = xyz[seg_mask > 0].cpu().numpy()
         seg_mask_flat = seg_mask[seg_mask > 0].cpu().numpy()
         P = seg_xyz.shape[0]
