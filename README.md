@@ -1,4 +1,4 @@
-# Bayesian Reconstruction with Retrieval-Augmented Priors
+# Robust Bayesian Scene Reconstruction with Retrieval-Augmented Priors for Precise Grasping and Planning
 
 ![](./website/fig1.png)
 
