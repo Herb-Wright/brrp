@@ -1,10 +1,15 @@
+"""
+do `pip install imageio[ffmpeg]` for this
+"""
 import logging
 import os
+import io
 
 import numpy as np
 import torch
 from PIL import Image
 import trimesh
+import imageio
 
 from brrp.utils import abspath, setup_logger
 from brrp.visualization import gen_mesh_for_sdf_batch_3d, some_colors
@@ -82,7 +87,78 @@ colors_tensor = torch.tensor([[0, 0, 0]] + some_colors)
 filter_mask = torch.norm(xyz - scene_center, dim=-1) <= 0.6
 points_filtered = xyz[filter_mask]
 seg_filtered = seg_map[filter_mask]
-points_filtered, batch = grid_subsample(points_filtered, seg_filtered, 0.02)
+points_filtered, batch = grid_subsample(points_filtered, seg_filtered, 0.01)
+
+
+def create_rotation_video(
+    scene,
+    output_path="reconstruction.mp4",
+    num_frames=60,
+    phi=0,
+    pi_angle=3.2,
+    rho=1.3,
+    lookat_position=None,
+    resolution=(800, 600),
+    line_settings=None,
+    fps=30
+):
+    """
+    Create a video of a trimesh scene with rotating camera.
+    
+    Parameters:
+    -----------
+    scene : trimesh.Scene
+        The trimesh scene to render
+    output_path : str
+        Path to save the output video (default: "reconstruction.mp4")
+    num_frames : int
+        Number of frames in the rotation (default: 60)
+    phi : float
+        Vertical angle in radians (default: 0)
+    theta : float
+        Initial horizontal angle in radians (default: 0)
+    rho : float
+        Distance from the center (default: 2.0)
+    lookat_position : array-like or None
+        Center position to look at. If None, uses scene centroid
+    resolution : tuple
+        Image resolution as (width, height) (default: (800, 600))
+    line_settings : dict or None
+        Line settings for rendering (default: None)
+    fps : int
+        Frames per second for the output video (default: 30)
+    """
+    frames = []
+    
+    # Use scene centroid if lookat_position not provided
+    if lookat_position is None:
+        lookat_position = scene.centroid
+    
+        # Generate frames by rotating pi angle from 0 to 2*pi
+    for i in range(num_frames):
+        # Rotate camera horizontally (full 360 degree rotation)
+        phi = -0.9*np.pi * (i / num_frames - 0.5)
+        
+        # Set camera position
+        scene.set_camera(
+            np.array([pi_angle, phi, 0.0]),
+            distance=rho,
+            center=lookat_position,
+        )
+        
+        # Render the scene
+        img_bytes = scene.save_image(resolution=resolution, line_settings=line_settings)
+        img = Image.open(io.BytesIO(img_bytes))
+        
+        # Convert to numpy array for imageio
+        frames.append(np.array(img))
+    
+    # Save as MP4 video
+    imageio.mimsave(output_path, frames, fps=fps, format='FFMPEG', codec='libx264')
+    logging.info(f"Video saved to {output_path}")
 
 # trimesh.Scene([trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])]).show()
-trimesh.Scene(meshes + [trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])]).show(smooth=False)
+scene = trimesh.Scene(meshes + [trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])])
+# scene = trimesh.Scene([trimesh.PointCloud(points_filtered.cpu(), colors=colors_tensor[batch.cpu()])])
+
+create_rotation_video(scene)

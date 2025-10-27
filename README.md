@@ -29,11 +29,22 @@ conda activate brrp
 
 Of course, you can also use `mamba` instead. If you *don't* have a cuda-enabled GPU or want to run the code on the CPU, you can use the `env_cpu.yml` file instead (creates a `brrp_cpu` environment).
 
+*Alternative:* You could also use uv and venv to install dependencies:
+
+```sh
+# If you are using uv+venv
+uv venv --python 3.10 ./env
+source env/bin/activate
+uv pip install -r requirements.txt
+```
+
 **Installing Project:**
 
 ```sh
 pip install .
 ```
+
+*(use `uv pip install .` for uv)*
 
 **Running an Example:** To run the example script, make sure you have downloaded the scenes and have them in the `~/data/brrp_real_world_scenes` directory (or edit the directory in the script). You also need to have the ycb_prior in that same directory. Then, you can run the command:
 
