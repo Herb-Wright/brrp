@@ -85,13 +85,7 @@ Run the container:
 docker run -it   --net=host   --gpus all   --env="NVIDIA_DRIVER_CAPABILITIES=all"   --env="DISPLAY=$DISPLAY"   --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --volume="$XAUTHORITY:/root/.Xauthority:rw"   brrp bash
 ```
 
-In the container (This is for Martin only):
-
-```sh
-echo "155.98.68.120 perception-pc" >> /etc/hosts
-export ROS_MASTER_URI=http://perception-pc:11311
-export ROS_IP=haku.cs.utah.edu
-```
+You might need to set some ROS env variables if communicating across machines.
 
 Then to run the node:
 ```sh
@@ -102,9 +96,8 @@ python scripts/run_ros_pointsdf.py
 
 ## Datasets
 
-- YCB Prior - *COMING SOON*
-- Shifted Scenes - *COMING SOON*
-- PointSDF Weights - *COMING SOON*
+- YCB Prior - [Google Drive Link](https://drive.google.com/uc?id=1h9kdW4QKFN3EzeOarZ82SOiiXu-T6ssw)
+- PointSDF Weights - [Google Drive Link](https://drive.google.com/uc?id=1qExvY1Nz0crqtLOuDhiNg8DwCmaVbXVC)
 
 
 ## Citation
