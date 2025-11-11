@@ -69,11 +69,35 @@ weights, hp_trans = full_brrp_method(
 )
 ```
 
+### Docker/Ros Version
+
+Clone and build:
+
+```sh
+git clone https://github.com/Herb-Wright/brrp.git
+cd brrp
+docker build -t brrp .
+```
+
+Run the container:
+
+```sh
+docker run -it   --net=host   --gpus all   --env="NVIDIA_DRIVER_CAPABILITIES=all"   --env="DISPLAY=$DISPLAY"   --env="QT_X11_NO_MITSHM=1"   --volume="/tmp/.X11-unix:/tmp/.X11-unix:rw"   --volume="$XAUTHORITY:/root/.Xauthority:rw"   brrp bash
+```
+
+You might need to set some ROS env variables if communicating across machines.
+
+Then to run the node:
+```sh
+python scripts/run_ros.py
+# OR for PointSDF:
+python scripts/run_ros_pointsdf.py
+```
+
 ## Datasets
 
-- YCB Prior - *COMING SOON*
-- Shifted Scenes - *COMING SOON*
-- PointSDF Weights - *COMING SOON*
+- YCB Prior - [Google Drive Link](https://drive.google.com/uc?id=1h9kdW4QKFN3EzeOarZ82SOiiXu-T6ssw)
+- PointSDF Weights - [Google Drive Link](https://drive.google.com/uc?id=1qExvY1Nz0crqtLOuDhiNg8DwCmaVbXVC)
 
 
 ## Citation
