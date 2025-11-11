@@ -143,6 +143,14 @@ a:hover {
     margin-top: 0;
 }
 
+.text-align-center {
+    text-align: center;
+}
+
+.text-big {
+    font-size: 1.5em;
+}
+
 @media only screen and (min-width: 480px) {
     body {
         font-size: 14px;

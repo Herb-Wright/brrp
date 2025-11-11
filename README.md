@@ -1,5 +1,7 @@
 # Robust Bayesian Scene Reconstruction with Retrieval-Augmented Priors for Precise Grasping and Planning
 
+*Herbert Wright, Weiming Zhi, Martin Matak, Matthew Johnson-Roberson, Tucker Hermans (RA-L 2025)*
+
 ![](./website/fig1.png)
 
 Our method, BRRP, **(a)**, **(b)** takes an input segmented RGBD image, and **(c)** *retrieves* objects to use as a prior, which allow it to **(d)** reconstruct the scene as well as **(e)** capture principled *uncertainty* about object shape.

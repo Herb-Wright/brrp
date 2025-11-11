@@ -29,11 +29,12 @@
     </head>
     <body>
         <div class="container">
-            <h1>Robust Bayesian Scene Reconstruction by Leveraging Retrieval-Augmented Priors</h1>
+            <h1>Robust Bayesian Scene Reconstruction with Retrieval-Augmented Priors for Precise Grasping and Planning</h1>
             <div class="text-align-center">
                 <p class="authors">
                     Herbert Wright<sup>1</sup>, 
                     Weiming Zhi<sup>2</sup>, 
+                    Martin Matak<sup>1</sup>, 
                     Matthew Johnson-Roberson<sup>2</sup>, 
                     Tucker Hermans<sup>1, 3</sup>
                 </p>
@@ -43,6 +44,7 @@
                     <sup>3</sup>NVIDIA
                 </p>
             </div>
+            <div><p  class="text-align-center text-big"><i>RA-L 2025</i></p></div>
             <div class="buttons">
                 <a href="https://arxiv.org/abs/2411.19461"><button>Arxiv</button></a>
                 <a href="paper.pdf"><button>PDF</button></a>
@@ -72,6 +74,11 @@
             <p>
                 In this work, we introduce a novel Bayesian approach for robustly reconstructing multi-object tabletop scenes by leveraging object-level shape priors. We present <b>B</b>ayesian <b>R</b>econstruction with <b>R</b>etrieval-augmented <b>P</b>riors  (BRRP). BRRP is resilient to many of the pitfalls of learning-based methods while still being able to leverage an <i>informative prior</i> to more accurately reconstruct known objects.
             </p>
+
+            <p>Our method allows for precise motion planning during real-world grasping:</p>
+            <br>
+            <img src="./output.gif"/>
+            <br>
             <h2>Retrieval-augmented Priors</h2>
             <p>
                 To motivate retrieval-augmented priors, consider the problem of Bayesian inference with a mixture model acting as the prior distribution. Given some data, we would like to infer a posterior distribution over hypotheses. If we have a mixture model as a prior distribution, then:
@@ -88,8 +95,8 @@
                 </span>
                 This means that we only need to evaluate a subset of the prior distribution components.</p>
             <h2>BRRP Method</h2>
-            <img src="method_overview.png"/>
-            <p>Overview of BRRP method. We begin with a segmented RGBD image and (a) feed cropped images of each segment into CLIP to get object probabilities. Then, we retrieve and (b) register the the top-k objects in the prior. This gives us a set of registered prior samples. We also (c) compute negative samples based on the observed segmented point cloud. Finally, (d) we run SVGD optimization to recover a posterior distribution over Hilbert map weights. We can use this distribution to both reconstruct the scene as well as measure uncertainty.</p>
+            <img src="method_overview_v5.png"/>
+            <p><b>Left:</b> Overview of BRRP method. We begin with a segmented RGBD image and compute both a retrieval-augmented prior as well as a likelihood from negative sampling. Then, we combine both in a Bayesian manner via SVGD. <b>Right:</b> An overview of our retrieval-augmented priors for reconstruction. We use CLIP to retrieve the top-\(k\) relevant objects in our database, then we perform registration and retrieve the corresponding prior samples.</p>
             <h2>Results</h2>
             <h3>Real World Scenes</h3>
             <img src="qualitative1.png"/> 
@@ -100,6 +107,18 @@
             <h3>Uncertainty</h3>
             <img src="new_uncertainty.png"/>
             <p>Here, we visualize the uncertainty of our method. Because our method is probabilistic, we can recover <i>principled uncertainy</i> about object shape</p>
+            <h3>Real-World Grasping</h3>
+            <div class="center">
+                <img src="./grasp-experiments-results-2.png" style="max-width: 600px; width: 100%"/>
+            </div>
+            <p>The above image shows results from our real-world grasping experiment. Overall, 5 grasps were attempted for 10 objects for each method. The left image shows the objects grasped, the right shows the overall grasp success rate.</p>
+            <h2>Video</h2>
+            <div class="center">
+                <video style="width: 100%" controls>
+                    <source src="./BRRP_suppl_vid.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
         </div>
     </body>
 </html>
