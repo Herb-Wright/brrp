@@ -107,11 +107,11 @@ python scripts/run_ros_pointsdf.py
 Please consider citing our work:
 
 ```
-@article{wright2024robust,
-  title={Robust Bayesian Scene Reconstruction by Leveraging Retrieval-Augmented Priors},
-  author={Wright, Herbert and Zhi, Weiming and Johnson-Roberson, Matthew and Hermans, Tucker},
-  journal={arXiv preprint arXiv:2411.19461},
-  year={2024}
+@article{wright2025robust,
+  title={Robust Bayesian Scene Reconstruction with Retrieval-Augmented Priors for Precise Grasping and Planning},
+  author={Wright, Herbert and Zhi, Weiming and Matak, Martin and Johnson-Roberson, Matthew and Hermans, Tucker},
+  journal={RA-L},
+  year={2025}
 }
 ```
 
