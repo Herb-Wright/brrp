@@ -110,7 +110,7 @@ Please consider citing our work:
 @article{wright2025robust,
   title={Robust Bayesian Scene Reconstruction with Retrieval-Augmented Priors for Precise Grasping and Planning},
   author={Wright, Herbert and Zhi, Weiming and Matak, Martin and Johnson-Roberson, Matthew and Hermans, Tucker},
-  journal={RA-L},
+  journal={Arxiv},
   year={2025}
 }
 ```
