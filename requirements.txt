@@ -1,0 +1,20 @@
+--find-links https://data.pyg.org/whl/torch-2.6.0+cu126.html
+
+numpy
+open3d
+torch==2.6
+torchvision
+torch_geometric
+torch-cluster
+matplotlib
+trimesh
+scikit-image
+point-cloud-utils
+transformers
+empy==3.3.4
+catkin_pkg
+rosnumpy
+gdown
+filelock
+pyglet<2
+git+https://github.com/Herb-Wright/v-prism.git
